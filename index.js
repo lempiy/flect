@@ -183,7 +183,7 @@ function runAnimation(row) {
             continue
         }
         row[i].meta.turn += row[i].meta.speed;
-        row[i].euler.y = row[i].meta.turn * 1/ limmit
+        row[i].euler.y = EasingFunctions.bounce(row[i].meta.turn * 1 / limmit)
         //const tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+decimalToHexString(row[i].meta.color)), 16)
         // if (!tint || tint === 0x000000) {
         //     console.log('TINT', tint, -row[i].meta.factor * 0.1, '#'+decimalToHexString(row[i].meta.color))
@@ -202,7 +202,7 @@ function runAnimation(row) {
             // applyLightOnTint(row[i])
             // row[i].meta.factor = 0
         }
-        row[i].euler.x = row[i].meta.turn * 1/ limmit / 3
+        row[i].euler.x = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit) / 3
     }
 }
 
