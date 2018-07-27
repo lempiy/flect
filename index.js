@@ -60,7 +60,7 @@ var EasingFunctions = {
 	}
 }
 
-var app = new PIXI.Application(1400, 800, 
+var app = new PIXI.Application(window.innerWidth, 800, 
     {
         resolution: 1,
         autoStart: false,
@@ -69,7 +69,7 @@ var app = new PIXI.Application(1400, 800,
     }
 );
 
-app.renderer = new PIXI.WebGLRenderer ( 1400, data.height * 30 + 100, {
+app.renderer = new PIXI.WebGLRenderer ( window.innerWidth, data.height * 30 + 100, {
     resolution: 1,
     autoStart: false,
     antialias: true,
@@ -139,7 +139,7 @@ for (let j = 0; j < data.height; j++) {
 }
 mainLayer.position.set(initX, initY)
 //mainLayer.addChild(getNet(sprites))
-gredientRadial(sprites, 15, 12, 8)
+gredientRadial(sprites, 8, 9, 8)
 applyLightTintToAll()
 camera.addChild(mainLayer)
 
@@ -312,11 +312,11 @@ function applyLight(sprite, lightFactor) {
 }
 
 const origcan = document.createElement('canvas');
-origcan.width = 1400
-const wPixels = 80
+origcan.width = window.innerWidth
+const wPixels = 70
 var origctx = origcan.getContext('2d'),
     img = new Image,
-    factor = Math.floor(1400 / wPixels);
+    factor = Math.floor(window.innerWidth / wPixels);
 let hPixels = 0
 img.onload = pixelate;
 img.src = './assets/logowhite.png';
