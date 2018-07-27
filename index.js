@@ -98,7 +98,7 @@ camera.position.set(app.view.width/2, app.view.height/2);
 // camera.position3d.y = -150
 app.stage.addChild(camera);
 const pietSize = 16
-const rowDelay = 500
+const rowDelay = 200
 const sprites = []
 let initX = -data.width * (pietSize + 5) * 0.5 + 12.5
 let initY = -app.view.height/2
@@ -122,7 +122,7 @@ for (let j = 0; j < data.height; j++) {
             turn: 0,
             speed: 0.01,
             isAnimating: false,
-            animationDelay: 0,
+            animationDelay: i * rowDelay,
             color: sprite.tint,
             lightFactor: 0,
             factor: 0
@@ -140,7 +140,7 @@ for (let j = 0; j < data.height; j++) {
 mainLayer.position.set(initX, initY)
 //mainLayer.addChild(getNet(sprites))
 gredientRadial(sprites, 15, 12, 8)
-gredientAnimRadial(sprites, -10, 44, 600)
+//gredientAnimRadial(sprites, -10, 44, 600)
 applyLightTintToAll()
 camera.addChild(mainLayer)
 
