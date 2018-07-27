@@ -1,3 +1,6 @@
+window.PIXI = PIXI;
+window.PIXI[ "default" ] = PIXI;
+const run = data => {
 var EasingFunctions = {
     // no easing, no acceleration
     linear: function (t) { return t },
@@ -57,7 +60,22 @@ var EasingFunctions = {
 	}
 }
 
-var app = new PIXI.Application(1000, 800, {resolution: 1, autoStart: false, antialias: true  });
+var app = new PIXI.Application(1400, 800, 
+    {
+        resolution: 1,
+        autoStart: false,
+        antialias: true,
+        powerPreference: true
+    }
+);
+
+app.renderer = new PIXI.WebGLRenderer ( 1400, data.height * 30 + 100, {
+    resolution: 1,
+    autoStart: false,
+    antialias: true,
+    powerPreference: true
+});
+
 document.body.appendChild(app.view);
 app.stop();
 const canvas = document.createElement('canvas')
@@ -74,64 +92,71 @@ ctx.fillRect(11.5, 3, 2, 2);
 
 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH
 var camera = new PIXI.projection.Camera3d();
-camera.setPlanes(2400, 30, 10000);
+camera.setPlanes(9000, 30, 10000);
 camera.position.set(app.view.width/2, app.view.height/2);
 // camera.position3d.x = -250
 // camera.position3d.y = -150
 app.stage.addChild(camera);
-
+const pietSize = 10
 const rowDelay = 20
 const sprites = []
-let x = -app.view.width/3
-let y = -app.view.height/2
+let initX = -data.width * (pietSize + 5) * 0.5 + 12.5
+let initY = -app.view.height/2
+let x = 0
+console.log(x)
+let y = 0
 const text = PIXI.Texture.from(canvas)
 let mainLayer = new PIXI.projection.Container3d();
-var filter = new PIXI.filters.ColorMatrixFilter();
-for (let j = 0; j < 25; j++) {
-    y = y + 30
+
+for (let j = 0; j < data.height; j++) {
+    y = y + pietSize + 5
     const row = []
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < data.width; i++) {
         let sprite = new PIXI.projection.Sprite3d(text)
         //var sprite = new PIXI.projection.Sprite3d(PIXI.Texture.fromImage('assets/neven7.jpg'))
-        sprite.tint = j > 12 ? 0x7777ff : 0xffff00; //Change with the color wanted
-        sprite.width = 25;
-        sprite.height = 25;
+        const index = j * 4 * data.width + i * 4
+        sprite.tint = rgbToHex(data.data[index], data.data[index + 1], data.data[index + 2]); //Change with the color wanted
+        sprite.width = pietSize;
+        sprite.height = pietSize;
         sprite.meta = {
             turn: 0,
-            speed: 0.008,
+            speed: 0.01,
             isAnimating: false,
             animationDelay: i * rowDelay,
-            color: j > 12 ? 0x7777ff : 0xffff00,
+            color: sprite.tint,
             lightFactor: 0,
             factor: 0
         }
 
         sprite.position.set(x, y)
         sprite.anchor.set(0.5,0.1)
-        x = x + 30
+        x = x + pietSize + 5
         row.push(sprite)
         mainLayer.addChild(sprite)
     }
-    x = -app.view.width/3
+    x = 0
     sprites.push(row)
 }
+mainLayer.position.set(initX, initY)
+//mainLayer.addChild(getNet(sprites))
 gredientRadial(sprites, 15, 12, 8)
 applyLightTintToAll()
 camera.addChild(mainLayer)
 
 app.stage.addChild(camera);
-
+console.log(mainLayer)
 //sprite.pivot3d.set(sprite.width * 0.5, sprite.height * 0.5, 0)
 app.start();
 
 
-console.log(PIXI.filters)
+console.log(sprites)
 const limmit = Math.PI / 6
 let allAnimationsStarted = false
 const start = performance.now()
 
 const ticker = app.ticker.add((delta) => {
     //sprite.euler.x = sprite.euler.x + 0.01 * delta;
+    const performanceStart = performance.now()
     for (let i = 0; i < sprites.length; i++) {
         var row = sprites[i]
         runAnimation(row)
@@ -157,8 +182,12 @@ function runAnimation(row) {
         }
         row[i].meta.turn += row[i].meta.speed;
         row[i].euler.y = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit)
-        row[i].tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+row[i].meta.color.toString(16)), 16)
-        applyLightOnTint(row[i])
+        //const tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+decimalToHexString(row[i].meta.color)), 16)
+        // if (!tint || tint === 0x000000) {
+        //     console.log('TINT', tint, -row[i].meta.factor * 0.1, '#'+decimalToHexString(row[i].meta.color))
+        // }
+        // row[i].tint = tint
+        // applyLightOnTint(row[i])
         row[i].meta.factor += row[i].meta.speed
         if (row[i].meta.turn >= limmit) {
             row[i].meta.turn = limmit
@@ -166,9 +195,9 @@ function runAnimation(row) {
         } else if (row[i].meta.turn <= 0) {
             row[i].meta.turn = 0
             row[i].meta.speed = -row[i].meta.speed
-            row[i].tint = row[i].meta.color
-            applyLightOnTint(row[i])
-            row[i].meta.factor = 0
+            // row[i].tint = row[i].meta.color
+            // applyLightOnTint(row[i])
+            // row[i].meta.factor = 0
         }
         row[i].euler.x = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit) / 3
     }
@@ -194,9 +223,31 @@ function shadeBlendConvert (p, from, to) {
     if(h)return "rgb"+(f[3]>-1||t[3]>-1?"a(":"(")+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
     else return (0x100000000+r((t[0]-f[0])*p+f[0])*0x1000000+r((t[1]-f[1])*p+f[1])*0x10000+r((t[2]-f[2])*p+f[2])*0x100+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)).toString(16).slice(1,f[3]>-1||t[3]>-1?undefined:-2);
 }
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+    return parseInt(componentToHex(r) + componentToHex(g) + componentToHex(b), 16);
+}
+
+function decimalToHexString(number)
+{
+  if (number < 0)
+  {
+    number = 0xFFFFFFFF + number + 1;
+  }
+  let num = number.toString(16).toUpperCase()
+  while (num.length != 6)
+  {
+    num = '0' + num
+  }
+  return num;
+}
 
 function applyLightOnTint(sprite) {
-    sprite.tint = parseInt(shadeBlendConvert((0.1 * sprite.meta.lightFactor), '#'+sprite.tint.toString(16)), 16)
+    sprite.tint = parseInt(shadeBlendConvert((0.1 * sprite.meta.lightFactor), '#'+decimalToHexString(sprite.tint)), 16)
 }
 
 function gredientRadial(matrix, centerX, centerY, radius) {
@@ -225,6 +276,82 @@ function drawCircle(matrix, centerX, centerY, r, maxRadius) {
     }
 }
 
+function getNet(sprites) {
+    console.log(sprites[0].length)
+    const width = sprites[0].length * (pietSize + 5)
+    const height = sprites.length * (pietSize + 5)
+    const cont = new PIXI.Container()
+    for (let i = 10; i < sprites.length; i = i + 10)
+    {
+        let line = new PIXI.Graphics();
+        line.position.set(-pietSize * 0.5, i * (pietSize + 5) + pietSize + 1);
+        line.lineStyle(3, 0xffffff)
+            .moveTo(1, 0)
+            .lineTo(width, 0);
+        cont.addChild(line)
+        
+    }
+    for (let j = 10; j < sprites[0].length + 10; j = j + 10)
+    {
+        let line = new PIXI.Graphics();
+        line.position.set(j * (pietSize + 5) - (pietSize + 5) * 0.5, pietSize + 2.5);
+        line.lineStyle(3, 0xffffff)
+            .moveTo(1, 0)
+            .lineTo(0, height);
+        cont.addChild(line)
+    }
+    return cont
+}
+
 function applyLight(sprite, lightFactor) {
     sprite.meta.lightFactor = lightFactor
+}
+
+
+
+}
+
+const origcan = document.createElement('canvas');
+origcan.width = 1400
+const wPixels = 80
+var origctx = origcan.getContext('2d'),
+    img = new Image,
+    factor = Math.floor(1400 / wPixels);
+let hPixels = 0
+img.onload = pixelate;
+img.src = './assets/cactus.jpg';
+const orginIsReady = false
+
+const pixcan = document.createElement('canvas')
+const pixctx = pixcan.getContext('2d');
+
+
+function pixelate () {
+    origcan.height = img.height * (origcan.width / img.width)
+    hPixels = Math.floor(origcan.height / factor)
+    if (!orginIsReady) {
+        // document.body.appendChild(origcan)
+        origctx.drawImage(img, 0, 0, origcan.width, origcan.height)
+    }
+    var fw = (origcan.width / factor)|0,
+        fh = (origcan.height / factor)|0;
+    
+    /// turn off image smoothing (prefixed in some browsers)
+    pixcan.width = fw
+    pixcan.height = fh
+    pixctx.imageSmoothingEnabled =
+    pixctx.mozImageSmoothingEnabled =
+    pixctx.msImageSmoothingEnabled =
+    pixctx.webkitImageSmoothingEnabled = false;
+    
+    
+    /// draw mini-version of image
+    pixctx.drawImage(origcan, 0, 0, fw, fh);
+    // document.body.appendChild(pixcan)
+    console.log(wPixels, hPixels)
+    /// draw the mini-version back up, voila, pixelated
+    
+    pixctx.drawImage(pixcan, 0, 0, fw, fh, 0, 0, fw, fh);
+    const data = pixctx.getImageData(0, 0, fw, fh)
+    run(data)
 }
