@@ -98,7 +98,7 @@ camera.position.set(app.view.width/2, app.view.height/2);
 // camera.position3d.y = -150
 app.stage.addChild(camera);
 const pietSize = 16
-const rowDelay = 100
+const rowDelay = 500
 const sprites = []
 let initX = -data.width * (pietSize + 5) * 0.5 + 12.5
 let initY = -app.view.height/2
@@ -122,7 +122,7 @@ for (let j = 0; j < data.height; j++) {
             turn: 0,
             speed: 0.01,
             isAnimating: false,
-            animationDelay: i * rowDelay,
+            animationDelay: 0,
             color: sprite.tint,
             lightFactor: 0,
             factor: 0
@@ -140,6 +140,7 @@ for (let j = 0; j < data.height; j++) {
 mainLayer.position.set(initX, initY)
 //mainLayer.addChild(getNet(sprites))
 gredientRadial(sprites, 15, 12, 8)
+gredientAnimRadial(sprites, -10, 44, 600)
 applyLightTintToAll()
 camera.addChild(mainLayer)
 
@@ -174,6 +175,7 @@ function applyLightTintToAll() {
 
 function runAnimation(row) {
     for (let i = 0; i < row.length; i++) {
+        if (!row[i].meta.isAnimating && !row[i].meta.animationDelay) continue
         if (!row[i].meta.isAnimating) {
             if (performance.now() - start > row[i].meta.animationDelay) {
                 row[i].meta.isAnimating = true
@@ -181,7 +183,7 @@ function runAnimation(row) {
             continue
         }
         row[i].meta.turn += row[i].meta.speed;
-        row[i].euler.y = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit)
+        row[i].euler.y = row[i].meta.turn * 1/ limmit
         //const tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+decimalToHexString(row[i].meta.color)), 16)
         // if (!tint || tint === 0x000000) {
         //     console.log('TINT', tint, -row[i].meta.factor * 0.1, '#'+decimalToHexString(row[i].meta.color))
@@ -195,11 +197,12 @@ function runAnimation(row) {
         } else if (row[i].meta.turn <= 0) {
             row[i].meta.turn = 0
             row[i].meta.speed = -row[i].meta.speed
+            row[i].meta.isAnimating = false
             // row[i].tint = row[i].meta.color
             // applyLightOnTint(row[i])
             // row[i].meta.factor = 0
         }
-        row[i].euler.x = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit) / 3
+        row[i].euler.x = row[i].meta.turn * 1/ limmit / 3
     }
 }
 
@@ -272,6 +275,32 @@ function drawCircle(matrix, centerX, centerY, r, maxRadius) {
             continue
         }
         applyLight(matrix[y][x], maxRadius - r);
+        angle += 1;
+    }
+}
+
+function gredientAnimRadial(matrix, centerX, centerY, radius) {
+    const maxRadius = radius + 1
+    while(radius > 0) {
+        drawAnimCircle(matrix, centerX, centerY, radius, maxRadius);
+        angle = 0;
+        radius --;
+    }
+    if (matrix[centerY] && matrix[centerY][centerX]) {
+        matrix[y][x].meta.animationDelay = (radius + 1) * rowDelay
+    }
+}
+
+function drawAnimCircle(matrix, centerX, centerY, r, maxRadius) {
+    let angle = 0
+    while(angle < 360) {
+        x = Math.round(centerX + r * Math.cos(angle));
+        y = Math.round(centerY + r * Math.sin(angle));
+        if (!matrix[y] || !matrix[y][x]) {
+            angle += 1;
+            continue
+        }
+        matrix[y][x].meta.animationDelay = (r + 1) * rowDelay
         angle += 1;
     }
 }
