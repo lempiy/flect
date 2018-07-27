@@ -60,7 +60,7 @@ var EasingFunctions = {
 	}
 }
 
-var app = new PIXI.Application(1400, 800, 
+var app = new PIXI.Application(1600, 800, 
     {
         resolution: 1,
         autoStart: false,
@@ -69,7 +69,7 @@ var app = new PIXI.Application(1400, 800,
     }
 );
 
-app.renderer = new PIXI.WebGLRenderer ( 1400, data.height * 30 + 100, {
+app.renderer = new PIXI.WebGLRenderer ( 1600, data.height * 30 + 100, {
     resolution: 1,
     autoStart: false,
     antialias: true,
@@ -97,7 +97,7 @@ camera.position.set(app.view.width/2, app.view.height/2);
 // camera.position3d.x = -250
 // camera.position3d.y = -150
 app.stage.addChild(camera);
-const pietSize = 10
+const pietSize = 20
 const rowDelay = 20
 const sprites = []
 let initX = -data.width * (pietSize + 5) * 0.5 + 12.5
@@ -182,12 +182,12 @@ function runAnimation(row) {
         }
         row[i].meta.turn += row[i].meta.speed;
         row[i].euler.y = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit)
-        //const tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+decimalToHexString(row[i].meta.color)), 16)
+        const tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+decimalToHexString(row[i].meta.color)), 16)
         // if (!tint || tint === 0x000000) {
         //     console.log('TINT', tint, -row[i].meta.factor * 0.1, '#'+decimalToHexString(row[i].meta.color))
         // }
-        // row[i].tint = tint
-        // applyLightOnTint(row[i])
+        row[i].tint = tint
+        applyLightOnTint(row[i])
         row[i].meta.factor += row[i].meta.speed
         if (row[i].meta.turn >= limmit) {
             row[i].meta.turn = limmit
@@ -195,9 +195,9 @@ function runAnimation(row) {
         } else if (row[i].meta.turn <= 0) {
             row[i].meta.turn = 0
             row[i].meta.speed = -row[i].meta.speed
-            // row[i].tint = row[i].meta.color
-            // applyLightOnTint(row[i])
-            // row[i].meta.factor = 0
+            row[i].tint = row[i].meta.color
+            applyLightOnTint(row[i])
+            row[i].meta.factor = 0
         }
         row[i].euler.x = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit) / 3
     }
@@ -312,14 +312,14 @@ function applyLight(sprite, lightFactor) {
 }
 
 const origcan = document.createElement('canvas');
-origcan.width = 1400
+origcan.width = 1600
 const wPixels = 80
 var origctx = origcan.getContext('2d'),
     img = new Image,
-    factor = Math.floor(1400 / wPixels);
+    factor = Math.floor(1600 / wPixels);
 let hPixels = 0
 img.onload = pixelate;
-img.src = './assets/cactus.jpg';
+img.src = './assets/logowhite.png';
 const orginIsReady = false
 
 const pixcan = document.createElement('canvas')
@@ -331,6 +331,10 @@ function pixelate () {
     hPixels = Math.floor(origcan.height / factor)
     if (!orginIsReady) {
         // document.body.appendChild(origcan)
+        origctx.imageSmoothingEnabled =
+        origctx.mozImageSmoothingEnabled =
+        origctx.msImageSmoothingEnabled =
+        origctx.webkitImageSmoothingEnabled = false;
         origctx.drawImage(img, 0, 0, origcan.width, origcan.height)
     }
     var fw = (origcan.width / factor)|0,
