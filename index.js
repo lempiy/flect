@@ -120,7 +120,7 @@ for (let j = 0; j < data.height; j++) {
         sprite.height = pietSize;
         sprite.meta = {
             turn: 0,
-            speed: 0.01,
+            speed: 0.02,
             isAnimating: false,
             animationDelay: i * rowDelay,
             color: sprite.tint,
