@@ -60,7 +60,7 @@ var EasingFunctions = {
 	}
 }
 
-var app = new PIXI.Application(1400, 800, 
+var app = new PIXI.Application(window.innerWidth, data.height * 30 + 100, 
     {
         resolution: 1,
         autoStart: false,
@@ -69,7 +69,7 @@ var app = new PIXI.Application(1400, 800,
     }
 );
 
-app.renderer = new PIXI.WebGLRenderer ( 1400, data.height * 30 + 100, {
+app.renderer = new PIXI.WebGLRenderer ( window.innerWidth, data.height * 30 + 100, {
     resolution: 1,
     autoStart: false,
     antialias: true,
@@ -98,7 +98,7 @@ camera.position.set(app.view.width/2, app.view.height/2);
 // camera.position3d.y = -150
 app.stage.addChild(camera);
 const pietSize = 16
-const rowDelay = 200
+const rowDelay = 5000
 const sprites = []
 let initX = -data.width * (pietSize + 5) * 0.5 + 12.5
 let initY = -app.view.height/2
@@ -120,9 +120,9 @@ for (let j = 0; j < data.height; j++) {
         sprite.height = pietSize;
         sprite.meta = {
             turn: 0,
-            speed: 0.02,
+            speed: 0.008,
             isAnimating: false,
-            animationDelay: i * rowDelay,
+            animationDelay: (Math.sin(i/(data.width-1) * 0.7) - Math.cos(j/(data.height-1) + 3.14*0.5)) * rowDelay,
             color: sprite.tint,
             lightFactor: 0,
             factor: 0
@@ -183,7 +183,7 @@ function runAnimation(row) {
             continue
         }
         row[i].meta.turn += row[i].meta.speed;
-        row[i].euler.y = EasingFunctions.bounce(row[i].meta.turn * 1 / limmit)
+        row[i].euler.y = EasingFunctions.easeOutCubic(row[i].meta.turn * 1 / limmit)
         //const tint = parseInt(shadeBlendConvert(-row[i].meta.factor * 0.75, '#'+decimalToHexString(row[i].meta.color)), 16)
         // if (!tint || tint === 0x000000) {
         //     console.log('TINT', tint, -row[i].meta.factor * 0.1, '#'+decimalToHexString(row[i].meta.color))
@@ -202,7 +202,7 @@ function runAnimation(row) {
             // applyLightOnTint(row[i])
             // row[i].meta.factor = 0
         }
-        row[i].euler.x = EasingFunctions.bounce(row[i].meta.turn * 1/ limmit) / 3
+        row[i].euler.x = EasingFunctions.easeOutCubic(row[i].meta.turn * 1/ limmit / 3)
     }
 }
 
@@ -341,11 +341,11 @@ function applyLight(sprite, lightFactor) {
 }
 
 const origcan = document.createElement('canvas');
-origcan.width = 1400
+origcan.width = window.innerWidth
 const wPixels = 70
 var origctx = origcan.getContext('2d'),
     img = new Image,
-    factor = Math.floor(1400 / wPixels);
+    factor = Math.floor(window.innerWidth / wPixels);
 let hPixels = 0
 img.onload = pixelate;
 img.src = './assets/logowhite.png';
