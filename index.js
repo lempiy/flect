@@ -97,7 +97,7 @@ camera.position.set(app.view.width/2, app.view.height/2);
 // camera.position3d.x = -250
 // camera.position3d.y = -150
 app.stage.addChild(camera);
-const pietSize = 16
+const pietSize = (window.innerWidth / data.width) - 5
 const rowDelay = 5000
 const sprites = []
 let initX = -data.width * (pietSize + 5) * 0.5 + 12.5
